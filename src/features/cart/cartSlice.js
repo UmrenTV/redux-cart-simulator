@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 import cartItems from "../../cartItems";
+import { openModal } from "../modal/modalSlice"; // example use  below in thunkAPI
 
 const initialState = {
     cartItems: cartItems,
@@ -10,13 +12,30 @@ const initialState = {
 
 const url = "https://www.course-api.com/react-useReducer-cart-project";
 
-export const getCartItems = createAsyncThunk("cart/getCartItems", async () => {
-    return fetch(url)
-        .then((response) => response.json())
-        .catch((error) => {
+export const getCartItems = createAsyncThunk(
+    "cart/getCartItems",
+    async (random, thunkAPI) => {
+        try {
+            console.log(random);
+            //console.log(thunkAPI.getState()); // this is complete state, of all features we've set up, which is very useful
+            //thunkAPI.dispatch(openModal()); // you can do lots of things with thunkAPI, like open modal, or dispatch other actions from other features
+            const response = await axios.get(url);
+            return response.data;
+        } catch (error) {
             console.log(error);
-        });
-});
+            //return thunkAPI.rejectWithValue(error.response.data);
+            return thunkAPI.rejectWithValue("error fetching");
+            // if you mess up with the url, you will get an error, and you can catch it here, and then you can return the error message to the user
+            // // I've added console.log in the 'rejected' case below, so you can see the error message in the console
+        }
+
+        // return fetch(url)
+        //     .then((response) => response.json())
+        //     .catch((error) => {
+        //         console.log(error);
+        //     });
+    }
+);
 
 const cartSlice = createSlice({
     name: "cart",
@@ -27,11 +46,12 @@ const cartSlice = createSlice({
                 state.isLoading = true;
             })
             .addCase(getCartItems.fulfilled, (state, action) => {
-                console.log(action.payload);
+                // console.log(action.payload);
                 state.isLoading = false;
                 state.cartItems = action.payload;
             })
-            .addCase(getCartItems.rejected, (state) => {
+            .addCase(getCartItems.rejected, (state, action) => {
+                console.log(action); // you can see the error message here that we've caused in the thunkAPI if you mess up with the url
                 state.isLoading = false;
             });
     },
