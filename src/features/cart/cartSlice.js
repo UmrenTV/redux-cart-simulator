@@ -11,7 +11,20 @@ const initialState = {
 const cartSlice = createSlice({
     name: "cart",
     initialState,
+    reducers: {
+        clearCart: (state) => {
+            //state.cartItems = [];
+            return {
+                ...state,
+                cartItems: [],
+                // if we don't spread the ...state, and just modify cartItems when returning the state,
+                // then all of the other state properties will be removed, and only cartItems will exist in the state.
+            };
+        },
+    },
 });
+
+export const { clearCart } = cartSlice.actions;
 
 // console.log(cartSlice);
 
